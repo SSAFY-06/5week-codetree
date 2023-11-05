@@ -1,0 +1,78 @@
+/*
+문제
+n개의 일이 주어질 때, 아침, 저녁으로 n/2개씩 나누어 처리
+업무간 상성 P(i,j) 존재
+ex. 아침에 1,2번, 저녁에 3,4번
+아침: P(1,2)+P(2,1), 저녁: P(3,4)+P(4,3)
+아침 업무 강도와 저녁 업무 강도의 차이의 최소값 구하기
+
+입력
+첫째 줄: 일의 양 n(4 ≤ n ≤ 20, n은 2의 배수)
+n개 줄: 업무간의 상성 P(1 ≤ P(i,j) ≤ 100(i≠j), P(i,i)=0)
+
+출력
+아침 업무 강도와 저녁 업무 강도의 차이의 최소값
+
+아이디어
+순서, 중복 없이 선택 - 조합(2nCn) = 20C10 = 184765
+*/
+import java.util.*;
+import java.io.*;
+public class Main {
+
+    static int N; // 업무 개수
+    static int[][] P; // 업무 상성
+    static boolean[] selected; // 조합 선택
+    static int minAbs = Integer.MAX_VALUE; // 최소 업무 강도 차이
+
+    public static void main(String[] args) throws IOException{
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        N = Integer.parseInt(br.readLine());
+        P = new int[N][N];
+        selected = new boolean[N];
+
+        for(int i=0; i<N; i++) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            for(int j=0; j<N; j++) {
+                P[i][j] = Integer.parseInt(st.nextToken());
+            }
+        }
+
+        comb(0,0);
+        System.out.println(minAbs);
+    }
+
+    static void comb(int idx, int cnt) { // 조합 선택
+        if(idx==N && cnt<N/2) return; // 끝까지 탐색 후 정해진 수만큼 선택 못했으면 넘어감
+        if(cnt==N/2) {
+            checkAbs();
+            return;
+        }
+        selected[idx] = true; // 선택
+        comb(idx+1, cnt+1);
+        selected[idx] = false; // 미선택
+        comb(idx+1, cnt);
+    }
+
+    static void checkAbs() {
+        ArrayList<Integer> am = new ArrayList<>();
+        ArrayList<Integer> pm = new ArrayList<>();
+        for(int i=0; i<N; i++) {
+            if(selected[i]) am.add(i); // 오전 업무 목록
+            else pm.add(i); // 저녁 업무 목록
+        }
+
+        int amWork = 0; // 오전 업무 합계
+        int pmWork = 0; // 오후 업무 합계
+        for(int i=0; i<N/2; i++) {
+            for(int j=i+1; j<N/2; j++) {
+                amWork += P[am.get(i)][am.get(j)];
+                amWork += P[am.get(j)][am.get(i)];
+                pmWork += P[pm.get(i)][pm.get(j)];
+                pmWork += P[pm.get(j)][pm.get(i)];
+            }
+        }
+        int abst = Math.abs(amWork-pmWork);
+        minAbs = Math.min(minAbs, abst); // 최소값 확인
+    }
+}
